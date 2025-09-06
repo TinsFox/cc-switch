@@ -220,6 +220,20 @@ async fn update_tray_menu(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            println!("单例插件：检测到新实例启动尝试");
+
+            // 当尝试启动新实例时，聚焦现有的主窗口
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize(); // 如果窗口被最小化，先取消最小化
+                let _ = window.show(); // 显示窗口
+                let _ = window.set_focus(); // 聚焦窗口
+
+                println!("单例插件：已聚焦现有主窗口");
+            } else {
+                eprintln!("单例插件：未找到主窗口");
+            }
+        }))
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             #[cfg(target_os = "macos")]
