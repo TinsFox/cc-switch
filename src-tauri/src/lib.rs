@@ -18,6 +18,7 @@ mod prompt_files;
 mod provider;
 mod provider_defaults;
 mod proxy;
+mod session_manager;
 mod services;
 mod settings;
 mod store;
@@ -693,6 +694,10 @@ pub fn run() {
             commands::stream_check_all_providers,
             commands::get_stream_check_config,
             commands::save_stream_check_config,
+            // Session manager
+            commands::list_sessions,
+            commands::get_session_messages,
+            commands::launch_session_terminal,
             commands::get_tool_versions,
             // Universal Provider management
             commands::get_universal_providers,

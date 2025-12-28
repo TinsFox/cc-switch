@@ -13,6 +13,7 @@ import {
   Wrench,
   Server,
   RefreshCw,
+  History,
 } from "lucide-react";
 import type { Provider } from "@/types";
 import type { EnvConflict } from "@/types/env";
@@ -46,6 +47,7 @@ import { DeepLinkImportDialog } from "@/components/DeepLinkImportDialog";
 import { AgentsPanel } from "@/components/agents/AgentsPanel";
 import { UniversalProviderPanel } from "@/components/universal";
 import { Button } from "@/components/ui/button";
+import { SessionManagerPage } from "@/components/sessions/SessionManagerPage";
 
 type View =
   | "providers"
@@ -54,7 +56,8 @@ type View =
   | "skills"
   | "mcp"
   | "agents"
-  | "universal";
+  | "universal"
+  | "sessions";
 
 const DRAG_BAR_HEIGHT = 28; // px
 const HEADER_HEIGHT = 64; // px
@@ -95,7 +98,7 @@ function App() {
   // 当前应用代理实际使用的供应商 ID（从 active_targets 中获取）
   const activeProviderId = useMemo(() => {
     const target = proxyStatus?.active_targets?.find(
-      (t) => t.app_type === activeApp,
+      (t) => t.app_type === activeApp
     );
     return target?.provider_id;
   }, [proxyStatus?.active_targets, activeApp]);
@@ -129,7 +132,7 @@ function App() {
             if (event.appType === activeApp) {
               await refetch();
             }
-          },
+          }
         );
       } catch (error) {
         console.error("[App] Failed to subscribe provider switch event", error);
@@ -163,7 +166,7 @@ function App() {
       } catch (error) {
         console.error(
           "[App] Failed to subscribe universal-provider-synced event",
-          error,
+          error
         );
       }
     };
@@ -191,7 +194,7 @@ function App() {
       } catch (error) {
         console.error(
           "[App] Failed to check environment conflicts on startup:",
-          error,
+          error
         );
       }
     };
@@ -207,7 +210,7 @@ function App() {
         if (migrated) {
           toast.success(
             t("migration.success", { defaultValue: "配置迁移成功" }),
-            { closeButton: true },
+            { closeButton: true }
           );
         }
       } catch (error) {
@@ -228,10 +231,10 @@ function App() {
           // 合并新检测到的冲突
           setEnvConflicts((prev) => {
             const existingKeys = new Set(
-              prev.map((c) => `${c.varName}:${c.sourcePath}`),
+              prev.map((c) => `${c.varName}:${c.sourcePath}`)
             );
             const newConflicts = conflicts.filter(
-              (c) => !existingKeys.has(`${c.varName}:${c.sourcePath}`),
+              (c) => !existingKeys.has(`${c.varName}:${c.sourcePath}`)
             );
             return [...prev, ...newConflicts];
           });
@@ -243,7 +246,7 @@ function App() {
       } catch (error) {
         console.error(
           "[App] Failed to check environment conflicts on app switch:",
-          error,
+          error
         );
       }
     };
@@ -319,7 +322,7 @@ function App() {
           (p) =>
             p.sortIndex !== undefined &&
             p.sortIndex >= newSortIndex! &&
-            p.id !== provider.id,
+            p.id !== provider.id
         )
         .map((p) => ({
           id: p.id,
@@ -335,7 +338,7 @@ function App() {
           toast.error(
             t("provider.sortUpdateFailed", {
               defaultValue: "排序更新失败",
-            }),
+            })
           );
           return; // 如果排序更新失败，不继续添加
         }
@@ -414,6 +417,9 @@ function App() {
               <UniversalProviderPanel />
             </div>
           );
+
+        case "sessions":
+          return <SessionManagerPage />;
         default:
           return (
             <div className="mx-auto max-w-[56rem] px-5 flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
@@ -500,7 +506,7 @@ function App() {
             } catch (error) {
               console.error(
                 "[App] Failed to re-check conflicts after deletion:",
-                error,
+                error
               );
             }
           }}
@@ -548,6 +554,7 @@ function App() {
                     t("universalProvider.title", {
                       defaultValue: "统一供应商",
                     })}
+                  {currentView === "sessions" && t("sessionManager.title")}
                 </h1>
               </div>
             ) : (
@@ -561,7 +568,7 @@ function App() {
                       "text-xl font-semibold transition-colors",
                       isProxyRunning && isCurrentAppTakeoverActive
                         ? "text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300"
-                        : "text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300",
+                        : "text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
                     )}
                   >
                     CC Switch
@@ -643,7 +650,7 @@ function App() {
                       "transition-all duration-200 ease-in-out overflow-hidden",
                       hasSkillsSupport
                         ? "opacity-100 w-8 scale-100 px-2"
-                        : "opacity-0 w-0 scale-75 pointer-events-none px-0 -ml-1",
+                        : "opacity-0 w-0 scale-75 pointer-events-none px-0 -ml-1"
                     )}
                     title={t("skills.manage")}
                   >
@@ -669,6 +676,15 @@ function App() {
                     title={t("prompts.manage")}
                   >
                     <Book className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCurrentView("sessions")}
+                    className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                    title={t("sessionManager.title")}
+                  >
+                    <History className="w-4 h-4" />
                   </Button>
                   <Button
                     variant="ghost"
